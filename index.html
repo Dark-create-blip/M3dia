@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Browser</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2798/2798007.png">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #ecf0f1;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 25px;
+            border: none;
+        }
+
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            justify-content: center;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            padding: 20px;
+        }
+
+        .media-card {
+            background: #34495e;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .media-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .media-poster {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+        }
+
+        .media-info {
+            padding: 15px;
+        }
+
+        .media-title {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+        }
+
+        .media-details {
+            font-size: 0.9em;
+            color: #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Media Browser</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search movies or TV shows...">
+        </div>
+    </div>
+
+    <div class="media-grid" id="mediaContainer"></div>
+
+    <script>
+        const mediaData = [
+            {
+                title: "The Lord of the Rings: The War of the Rohirrim (2024)",
+                type: "movie",
+                poster: "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/cXzCOx1hUuU9CfmiEv6rXjb6EqU.jpg",
+                video: "https://vidlink.pro/movie/839033"
+            },
+            {
+                title: "Vikings",
+                type: "tv",
+                poster: "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/bQLrHIRNEkE3PdIWQrZHynQZazu.jpg",
+                video: "C:/Users/Drom/Desktop/random/Movie/Vikings.html"
+            }
+        ];
+
+        function renderMedia(items) {
+            const container = document.getElementById('mediaContainer');
+            container.innerHTML = items.map(item => `
+                <div class="media-card" onclick="playMedia('${item.video}')">
+                    <img src="${item.poster}" class="media-poster" alt="${item.title}">
+                    <div class="media-info">
+                        <h3 class="media-title">${item.title}</h3>
+                        <div class="media-details">
+                            <p>${item.type.toUpperCase()}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function playMedia(videoUrl) {
+            window.open(videoUrl, '_blank');
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = mediaData.filter(item => 
+                item.title.toLowerCase().includes(searchTerm)
+            );
+            renderMedia(filtered);
+        });
+
+        // Initial render
+        renderMedia(mediaData);
+    </script>
+</body>
+</html>
