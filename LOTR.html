@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2798/2798007.png">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            background-image: 
+                radial-gradient(circle at 50% 50%, 
+                    rgba(255,140,0,0.05) 0%, 
+                    transparent 100%);
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(255, 165, 0, 0.1);
+        }
+
+        .video-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(45deg, #2a2a2a 0%, #1a1a1a 100%);
+            z-index: -1;
+            border-radius: 15px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+            border: 2px solid #ff8c00;
+        }
+
+        .season-container {
+            background: linear-gradient(to bottom right, #2a2a2a, #1f1f1f);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .season-control {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+
+        label {
+            color: #ff8c00;
+            font-size: 18px;
+            margin-right: 15px;
+            text-shadow: 0 0 10px rgba(255, 140, 0, 0.2);
+        }
+
+        select {
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 2px solid #ff8c00;
+            background: #333;
+            color: #ffd8a8;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .episode-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 15px;
+            justify-content: flex-start;
+        }
+
+        .episode-btn {
+            flex: 1 0 calc(25% - 15px); /* 4 columns by default */
+            min-width: 200px;
+            max-width: 300px;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .episode-btn {
+                flex-basis: calc(33.33% - 15px); /* 3 columns */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .episode-btn {
+                flex-basis: calc(50% - 15px); /* 2 columns */
+            }
+        }
+
+        @media (max-width: 480px) {
+            .episode-btn {
+                flex-basis: 100%; /* 1 column */
+            }
+        }
+
+        .video-btn {
+            background: #ff8c00 !important;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            color: #2a2a2a;
+        }
+
+        .video-btn:hover {
+            background: #ff6b00 !important;
+            box-shadow: 0 0 20px rgba(255, 140, 0, 0.2);
+        }
+
+        /* Cinema curtain effect */
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 20%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(40,40,40,0.8), transparent);
+            z-index: -1;
+        }
+
+        .loader {
+            border: 4px solid #ff8c00;
+            border-radius: 50%;
+            border-top: 4px solid transparent;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar styling */
+        .episode-buttons::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .episode-buttons::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        .episode-buttons::-webkit-scrollbar-thumb {
+            background: #ff8c00;
+            border-radius: 4px;
+        }
+
+        /* Season title styling */
+        .season-title {
+            color: #ff8c00;
+            margin: 0 0 15px 15px;
+            font-size: 1.4em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .now-playing {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #ff8c00;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1;
+            display: none;
+        }
+
+        .now-playing::before {
+            content: "▶ ";
+            font-size: 12px;
+        }
+
+        .episode-btn.playing {
+            background: #ff8c00 !important;
+            color: #1a1a1a !important;
+            box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
+        }
+
+        .video-controls {
+            text-align: center;
+            margin: 20px 0;
+            padding: 0 20px;
+        }
+
+        #nextEpisodeBtn {
+            margin-top: 15px;
+            font-size: 16px;
+            padding: 15px 30px;
+            border-radius: 30px;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <div class="now-playing" id="nowPlaying"></div>
+        <iframe id="videoPlayer" width="560" height="315" frameborder="0" allowfullscreen></iframe>
+    </div>
+
+    <div class="season-container">
+        <div class="season-control">
+            <label>Select Server:</label>
+            <select id="seasonSelect">
+                <option value="1">Server 1</option>
+            </select>
+        </div>
+        
+        <div class="episode-inputs">
+            <!-- Season 1 Episodes -->
+            <div class="episode-row" data-season="1">
+                <h3 class="season-title">Trilogy</h3>
+                <div class="episode-buttons">
+                    <button class="video-btn episode-btn" onclick="playVideo('https://vidlink.pro/movie/120', 'Lord of The Rings-1', 1, 1)">Fellowship of The Ring</button>
+                    <button class="video-btn episode-btn" onclick="playVideo('https://vidlink.pro/movie/121', 'Lord of The Rings-2', 1, 2)">The Two Towers</button>
+                    <button class="video-btn episode-btn" onclick="playVideo('https://vidlink.pro/movie/122', 'Lord of The Rings-3', 1, 3)">The Return of the King</button>
+            </div>
+
+    <div id="loading" style="display:none;">
+        <div class="loader"></div>
+    </div>
+
+    <script>
+        let currentEpisodeIndex = -1;
+        let currentSeasonEpisodes = [];
+
+        function playVideo(url, episodeTitle, season, episodeNumber) {
+            const player = document.getElementById('videoPlayer');
+            const nowPlaying = document.getElementById('nowPlaying');
+            const nextBtn = document.getElementById('nextEpisodeBtn');
+            
+            // Update current episode tracking
+            currentSeasonEpisodes = Array.from(document.querySelectorAll(`[data-season="${season}"] .episode-btn`));
+            currentEpisodeIndex = episodeNumber - 1;
+            
+            // Update player and UI
+            player.src = url;
+            nowPlaying.textContent = `Now Playing: ${episodeTitle}`;
+            nowPlaying.style.display = 'block';
+            nextBtn.style.display = currentEpisodeIndex < currentSeasonEpisodes.length - 1 ? 'inline-block' : 'none';
+            
+            // Update button states
+            currentSeasonEpisodes.forEach(btn => btn.classList.remove('playing'));
+            event.target.classList.add('playing');
+        }
+
+        function playNextEpisode() {
+            if(currentEpisodeIndex === -1 || currentEpisodeIndex >= currentSeasonEpisodes.length - 1) return;
+            const nextEpisode = currentSeasonEpisodes[currentEpisodeIndex + 1];
+            const url = nextEpisode.onclick.toString().match(/'(.*?)'/)[1];
+            const title = nextEpisode.textContent;
+            nextEpisode.click();
+        }
+
+        // Add this new function for previous episode
+        function playPreviousEpisode() {
+            if(currentEpisodeIndex <= 0) return;
+            const prevEpisode = currentSeasonEpisodes[currentEpisodeIndex - 1];
+            const url = prevEpisode.onclick.toString().match(/'(.*?)'/)[1];
+            const title = prevEpisode.textContent;
+            prevEpisode.click();
+        }
+
+        // Add keyboard event listener
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'ArrowRight') {
+                playNextEpisode();
+            } else if(e.key === 'ArrowLeft') {
+                playPreviousEpisode();
+            }
+        });
+
+        // Initialize season display on page load
+        function initSeasonDisplay() {
+            const seasonSelect = document.getElementById('seasonSelect');
+            const initialSeason = seasonSelect.value;
+            document.querySelectorAll('.episode-row').forEach(row => {
+                row.style.display = row.dataset.season === initialSeason ? 'flex' : 'none';
+            });
+        }
+
+        // Show/hide season inputs based on dropdown selection
+        document.getElementById('seasonSelect').addEventListener('change', function() {
+            const selectedSeason = this.value;
+            document.querySelectorAll('.episode-row').forEach(row => {
+                row.style.display = row.dataset.season === selectedSeason ? 'flex' : 'none';
+            });
+        });
+
+        // Run initialization when page loads
+        window.onload = initSeasonDisplay;
+
+        // Add this to ensure keyboard events work even when iframe is focused
+        document.getElementById('videoPlayer').addEventListener('load', function() {
+            this.contentWindow.document.addEventListener('keydown', (e) => {
+                if(e.key === 'ArrowRight') {
+                    playNextEpisode();
+                } else if(e.key === 'ArrowLeft') {
+                    playPreviousEpisode();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
